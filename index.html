@@ -1,0 +1,117 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>GlobalMicro South Africa - Booking System</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <h1>GlobalMicro South Africa</h1>
+    <p>Internal Meeting Room & Equipment Booking System</p>
+    <hr>
+
+    <div class="container">
+        <!-- Left Column: Resources -->
+        <div class="column">
+            <h2>Meeting Rooms</h2>
+            <table>
+                <thead>
+                    <tr>
+                        <th>Room Name</th>
+                        <th>Capacity</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr><td>Boardroom A</td><td>12</td></tr>
+                    <tr><td>Boardroom B</td><td>8</td></tr>
+                    <tr><td>Meeting Room 1</td><td>6</td></tr>
+                    <tr><td>Meeting Room 2</td><td>6</td></tr>
+                    <tr><td>Training Room</td><td>20</td></tr>
+                </tbody>
+            </table>
+
+            <h2>Shared Equipment</h2>
+            <table>
+                <thead>
+                    <tr>
+                        <th>Equipment</th>
+                        <th>Quantity</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr><td>Projector</td><td>3</td></tr>
+                    <tr><td>Demo Laptop</td><td>5</td></tr>
+                    <tr><td>Test Tablet</td><td>4</td></tr>
+                    <tr><td>Video Camera</td><td>2</td></tr>
+                    <tr><td>Presentation Clicker</td><td>6</td></tr>
+                </tbody>
+            </table>
+        </div>
+
+        <!-- Middle Column: Booking Form -->
+        <div class="column">
+            <h2>Create Booking</h2>
+            <form id="bookingForm">
+                <label for="staffName">Staff Name:</label>
+                <input type="text" id="staffName" name="staffName" required>
+
+                <label for="resourceType">Resource Type:</label>
+                <select id="resourceType" name="resourceType" required onchange="updateResourceOptions()">
+                    <option value="">-- Select Type --</option>
+                    <option value="room">Meeting Room</option>
+                    <option value="equipment">Equipment</option>
+                </select>
+
+                <label for="resource">Resource:</label>
+                <select id="resource" name="resource" required>
+                    <option value="">-- Select Resource --</option>
+                </select>
+
+                <label for="bookingDate">Date:</label>
+                <input type="date" id="bookingDate" name="bookingDate" required>
+
+                <label for="startTime">Start Time:</label>
+                <input type="time" id="startTime" name="startTime" required>
+
+                <label for="endTime">End Time:</label>
+                <input type="time" id="endTime" name="endTime" required>
+
+                <button type="submit">Create Booking</button>
+            </form>
+            <p id="formMessage"></p>
+        </div>
+
+        <!-- Right Column: View Bookings -->
+        <div class="column">
+            <h2>View Bookings</h2>
+            <div class="button-group">
+                <button onclick="showBookings('today')">Today</button>
+                <button onclick="showBookings('tomorrow')">Tomorrow</button>
+                <button onclick="showBookings('upcoming')">All Upcoming</button>
+            </div>
+
+            <h3 id="bookingsTitle">Today's Bookings</h3>
+            <table id="bookingsTable">
+                <thead>
+                    <tr>
+                        <th>Staff</th>
+                        <th>Resource</th>
+                        <th>Date</th>
+                        <th>Time</th>
+                        <th>Action</th>
+                    </tr>
+                </thead>
+                <tbody id="bookingsBody">
+                    <tr><td colspan="5">No bookings found.</td></tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <hr>
+    <p class="footer">Internal tool - Built by Software Engineering Intern | 2024</p>
+
+    <script src="script.js"></script>
+</body>
+</html>
