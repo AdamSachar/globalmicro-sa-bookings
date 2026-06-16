@@ -1,0 +1,19 @@
+{
+    "name": "Till Slips — Catering",
+    "short_name": "Till Slips",
+    "description": "Capture till slips into jobs for a small catering business. Works offline.",
+    "start_url": "./index.html",
+    "scope": "./",
+    "display": "standalone",
+    "orientation": "portrait",
+    "background_color": "#f6f4ee",
+    "theme_color": "#2e7d57",
+    "icons": [
+        {
+            "src": "icon.svg",
+            "sizes": "any",
+            "type": "image/svg+xml",
+            "purpose": "any maskable"
+        }
+    ]
+}

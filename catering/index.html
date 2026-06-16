@@ -1,0 +1,132 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover, maximum-scale=5.0">
+    <meta name="theme-color" content="#2e7d57">
+    <meta name="description" content="Simple till slip and expense capture for a small catering business.">
+
+    <!-- iPhone: behave like an installed app when added to Home Screen -->
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="Till Slips">
+    <link rel="apple-touch-icon" href="icon.svg">
+    <link rel="icon" href="icon.svg" type="image/svg+xml">
+    <link rel="manifest" href="manifest.json">
+
+    <title>Till Slips — Catering</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+<!-- ============ TOP BAR ============ -->
+<header class="topbar">
+    <button id="backBtn" class="back" type="button" aria-label="Go back" hidden>&#8592; Back</button>
+    <h1 id="topTitle">My Jobs</h1>
+</header>
+
+<main>
+
+    <!-- ============ SCREEN 1: JOBS LIST (HOME) ============ -->
+    <section id="screen-home" class="screen">
+        <div class="grand-total" id="grandTotalCard" hidden>
+            <span class="grand-total-label">Total of all jobs</span>
+            <span class="grand-total-value" id="grandTotalValue">R 0.00</span>
+        </div>
+
+        <button class="big-btn add" type="button" onclick="newJob()">&#43; New Job</button>
+
+        <div id="jobsList" class="card-list"></div>
+
+        <p id="homeEmpty" class="empty-note">
+            No jobs yet.<br>Tap <strong>+ New Job</strong> to start.<br>
+            For example: <em>“Smith Wedding”</em> or <em>“Church Lunch”</em>.
+        </p>
+
+        <button class="big-btn ghost" type="button" id="installBtn" onclick="installApp()" hidden>
+            &#11015; Install app on this phone
+        </button>
+
+        <div class="footer-tools">
+            <button class="text-btn" type="button" onclick="backupData()">Save a backup</button>
+            <button class="text-btn" type="button" onclick="restoreData()">Restore backup</button>
+        </div>
+        <p class="tip" id="installTip" hidden></p>
+    </section>
+
+    <!-- ============ SCREEN 2: ONE JOB ============ -->
+    <section id="screen-job" class="screen" hidden>
+        <div class="job-head">
+            <div class="job-total">
+                <span class="job-total-label" id="jobName">Job</span>
+                <span class="job-total-value" id="jobTotal">R 0.00</span>
+                <span class="job-sub" id="jobSub">0 slips</span>
+            </div>
+        </div>
+
+        <button class="big-btn add" type="button" onclick="addSlip()">&#43; Add Till Slip</button>
+
+        <div id="slipsList" class="card-list"></div>
+        <p id="jobEmpty" class="empty-note">No slips yet.<br>Tap <strong>+ Add Till Slip</strong>.</p>
+
+        <!-- Quote / price helper -->
+        <details class="panel" id="pricePanel">
+            <summary>Work out what to charge</summary>
+            <div class="panel-body">
+                <label for="markupInput">Add mark-up %</label>
+                <input id="markupInput" type="number" inputmode="numeric" min="0" step="5"
+                       placeholder="e.g. 40" oninput="updatePrice()">
+                <div class="price-row"><span>Your cost</span><strong id="priceCost">R 0.00</strong></div>
+                <div class="price-row"><span>Suggested charge</span><strong id="priceCharge" class="charge">R 0.00</strong></div>
+                <p class="hint">This is only a guide to help you quote the customer.</p>
+            </div>
+        </details>
+
+        <div class="job-actions">
+            <button class="big-btn share" type="button" onclick="exportJob()">Export / Share</button>
+            <button class="big-btn ghost" type="button" onclick="printJob()">Print or Save PDF</button>
+            <button class="text-btn danger" type="button" onclick="deleteJob()">Delete this job</button>
+        </div>
+    </section>
+
+    <!-- ============ SCREEN 3: ADD / EDIT SLIP ============ -->
+    <section id="screen-slip" class="screen" hidden>
+        <form id="slipForm" onsubmit="return saveSlip(event)">
+            <label for="slipAmount">Amount on the slip (R)</label>
+            <input id="slipAmount" type="text" inputmode="decimal" autocomplete="off"
+                   placeholder="0.00" required>
+
+            <label for="slipShop">Shop name</label>
+            <input id="slipShop" type="text" autocomplete="off" placeholder="e.g. Checkers">
+
+            <label for="slipCategory">What was it for?</label>
+            <select id="slipCategory"></select>
+
+            <label for="slipDate">Date on the slip</label>
+            <input id="slipDate" type="date">
+
+            <label for="slipPhoto">Photo of the slip (optional)</label>
+            <input id="slipPhoto" type="file" accept="image/*" capture="environment"
+                   onchange="previewPhoto(this)">
+            <div id="photoPreviewWrap" hidden>
+                <img id="photoPreview" alt="Photo of the till slip">
+                <button type="button" class="text-btn danger" onclick="clearPhoto()">Remove photo</button>
+            </div>
+
+            <label for="slipNote">Note (optional)</label>
+            <input id="slipNote" type="text" autocomplete="off" placeholder="e.g. for the cake">
+
+            <button class="big-btn add" type="submit">Save Slip</button>
+            <button class="text-btn" type="button" onclick="goBack()">Cancel</button>
+            <button id="slipDelete" class="text-btn danger" type="button" onclick="deleteSlip()" hidden>Delete this slip</button>
+        </form>
+    </section>
+
+</main>
+
+<!-- friendly toast message -->
+<div id="toast" class="toast" hidden></div>
+
+<script src="app.js"></script>
+</body>
+</html>

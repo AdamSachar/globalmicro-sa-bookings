@@ -1,0 +1,13 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" width="512" height="512">
+  <rect width="512" height="512" rx="96" fill="#2e7d57"/>
+  <!-- till slip / receipt -->
+  <path d="M170 96h172a16 16 0 0 1 16 16v304l-34-22-34 22-34-22-34 22-34-22-34 22V112a16 16 0 0 1 16-16z" fill="#ffffff"/>
+  <g fill="#2e7d57">
+    <rect x="196" y="150" width="120" height="18" rx="9"/>
+    <rect x="196" y="196" width="120" height="14" rx="7"/>
+    <rect x="196" y="232" width="120" height="14" rx="7"/>
+    <rect x="196" y="268" width="76" height="14" rx="7"/>
+  </g>
+  <!-- Rand symbol -->
+  <text x="300" y="300" font-family="-apple-system, Arial, sans-serif" font-size="84" font-weight="800" fill="#b8860b" text-anchor="end">R</text>
+</svg>
