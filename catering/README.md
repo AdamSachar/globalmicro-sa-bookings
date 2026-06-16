@@ -9,11 +9,15 @@ anywhere), and the totals **add up automatically**.
 
 ## What it does
 
+- **📷 Reads the slip for you (OCR)** — take a photo of the till slip and the app
+  automatically reads the **total** off it and fills it in. If the read is wrong,
+  she just taps the correct amount from the ones found on the slip. This is the
+  main way slips are captured — the totals it reads are what the job adds up.
 - **Jobs** — make a job for each event (e.g. *“Smith Wedding”*, *“Church Lunch”*).
-- **Add till slips** to a job: amount, shop, what it was for, the date, an
-  optional **photo of the slip**, and a note.
-- **Auto-calculate** — every job shows its running total, and the home screen
-  shows the grand total of all jobs.
+- **Add till slips** to a job: the photo + total (read automatically), shop,
+  what it was for, the date, and a note.
+- **Auto-calculate** — every job adds up the slip totals automatically, and the
+  home screen shows the grand total of all jobs.
 - **What to charge** — type a mark-up % and it suggests a price to quote the
   customer.
 - **Export / Share** — send a job as a spreadsheet (CSV) by email, WhatsApp or
@@ -37,9 +41,14 @@ anywhere), and the totals **add up automatically**.
 Everyday use:
 
 - Tap **+ New Job**, give it a name.
-- Tap **+ Add Till Slip**, type the amount, take a photo of the slip, **Save**.
-- The total updates by itself.
+- Tap **+ Add Till Slip** → **📷 Take photo of slip**. The app reads the total
+  and fills it in — she just checks it and taps **Save**.
+- The job total updates by itself.
 - When the event is done, tap **Export / Share** to send it on.
+
+> The slip reader (OCR) downloads a small engine the first time it is used, so
+> the **first** photo needs internet. After that it works without a signal.
+> Photos never leave the phone — the reading happens on the device.
 
 ## Tech notes
 

@@ -247,6 +247,7 @@ function addSlip() {
     document.getElementById('slipCategory').value = CATEGORIES[0];
     document.getElementById('slipDelete').hidden = true;
     clearPhoto();
+    resetOcrUI();
     goTo('slip');
     setTimeout(() => document.getElementById('slipAmount').focus(), 120);
 }
@@ -263,6 +264,7 @@ function editSlip(id) {
     document.getElementById('slipDate').value = slip.dateISO || todayISO();
     document.getElementById('slipNote').value = slip.note || '';
     if (slip.photo) showPhoto(slip.photo); else clearPhoto();
+    resetOcrUI();
     document.getElementById('slipDelete').hidden = false;
     goTo('slip');
 }
@@ -324,6 +326,7 @@ function previewPhoto(input) {
     reader.onload = e => compressImage(e.target.result, dataUrl => {
         state.pendingPhoto = dataUrl;
         showPhoto(dataUrl);
+        runOCR(dataUrl);     // read the slip and fill in the total automatically
     });
     reader.readAsDataURL(file);
 }
@@ -357,6 +360,197 @@ function clearPhoto() {
     document.getElementById('photoPreview').removeAttribute('src');
     document.getElementById('photoPreviewWrap').hidden = true;
     document.getElementById('slipPhoto').value = '';
+    resetOcrUI();
+}
+
+// ============================================================
+//  OCR — read the till slip and pull out the TOTAL
+//  (runs entirely on the phone; no slip photo leaves the device)
+// ============================================================
+
+function resetOcrUI() {
+    const status = document.getElementById('ocrStatus');
+    if (status) status.hidden = true;
+    const hint = document.getElementById('amountHint');
+    if (hint) hint.hidden = true;
+    const ch = document.getElementById('amountChoices');
+    if (ch) { ch.hidden = true; ch.innerHTML = ''; }
+}
+
+// Load the OCR engine only the first time it is needed.
+let tessLoader = null;
+function ensureTesseract() {
+    if (window.Tesseract) return Promise.resolve();
+    if (tessLoader) return tessLoader;
+    tessLoader = new Promise((resolve, reject) => {
+        const s = document.createElement('script');
+        s.src = 'https://cdn.jsdelivr.net/npm/tesseract.js@5/dist/tesseract.min.js';
+        s.onload = resolve;
+        s.onerror = () => reject(new Error('engine failed to load'));
+        document.head.appendChild(s);
+    });
+    return tessLoader;
+}
+
+async function runOCR(dataUrl) {
+    const status = document.getElementById('ocrStatus');
+    status.hidden = false;
+    status.className = 'ocr-status working';
+    status.innerHTML = '<span class="spin"></span> Reading the slip… please wait';
+    try {
+        await ensureTesseract();
+        const { data } = await Tesseract.recognize(dataUrl, 'eng', {
+            logger: m => {
+                if (m.status === 'recognizing text') {
+                    status.innerHTML = '<span class="spin"></span> Reading the slip… ' +
+                        Math.round(m.progress * 100) + '%';
+                }
+            }
+        });
+        applyOCRResult(extractFromText(data.text || ''));
+    } catch (e) {
+        status.className = 'ocr-status warn';
+        status.textContent = 'Could not read the slip automatically — please type the total in Step 2.';
+    }
+}
+
+function applyOCRResult(result) {
+    const status = document.getElementById('ocrStatus');
+    if (result.total != null) {
+        document.getElementById('slipAmount').value = result.total.toFixed(2);
+        document.getElementById('amountHint').hidden = false;
+        status.className = 'ocr-status ok';
+        status.innerHTML = '✓ Read the total: <strong>' + R(result.total) +
+            '</strong> — please check it is right.';
+    } else {
+        status.className = 'ocr-status warn';
+        status.textContent = 'Could not find the total — please type it in Step 2.';
+    }
+    if (result.shop && !document.getElementById('slipShop').value) {
+        document.getElementById('slipShop').value = result.shop;
+    }
+    if (result.dateISO) document.getElementById('slipDate').value = result.dateISO;
+    renderAmountChoices(result.amounts);
+}
+
+// If the auto-pick is wrong, let her tap the correct amount from the slip.
+function renderAmountChoices(amounts) {
+    const wrap = document.getElementById('amountChoices');
+    wrap.innerHTML = '';
+    if (!amounts || amounts.length <= 1) { wrap.hidden = true; return; }
+    const label = document.createElement('div');
+    label.className = 'chips-label';
+    label.textContent = 'Not right? Tap the correct total:';
+    wrap.appendChild(label);
+    amounts.forEach(v => {
+        const b = document.createElement('button');
+        b.type = 'button';
+        b.className = 'chip';
+        b.textContent = R(v);
+        b.addEventListener('click', () => {
+            document.getElementById('slipAmount').value = v.toFixed(2);
+            document.getElementById('amountHint').hidden = false;
+            wrap.querySelectorAll('.chip').forEach(c => c.classList.remove('sel'));
+            b.classList.add('sel');
+        });
+        wrap.appendChild(b);
+    });
+    wrap.hidden = false;
+}
+
+// Turn a messy bit of text like "R1 234,56" or "1,234.56" into a number.
+function normalizeAmount(raw) {
+    let s = String(raw).replace(/[^\d.,]/g, '');
+    if (!s) return null;
+    const hasComma = s.includes(','), hasDot = s.includes('.');
+    if (hasComma && hasDot) {
+        if (s.lastIndexOf(',') > s.lastIndexOf('.')) s = s.replace(/\./g, '').replace(',', '.');
+        else s = s.replace(/,/g, '');
+    } else if (hasComma) {
+        if (/,\d{2}$/.test(s) && s.match(/,/g).length === 1) s = s.replace(',', '.');
+        else s = s.replace(/,/g, '');
+    } else if (hasDot) {
+        if (!(/\.\d{2}$/.test(s) && s.match(/\./g).length === 1)) s = s.replace(/\./g, '');
+    }
+    const v = parseFloat(s);
+    return isFinite(v) ? v : null;
+}
+
+// Pull the total (and shop / date / candidate amounts) out of the OCR text.
+function extractFromText(text) {
+    const lines = text.split(/\n/).map(l => l.trim()).filter(Boolean);
+    // English + Afrikaans words, since this is for a South African business.
+    const TOTAL_KW = /(grand\s*total|total\s*due|amount\s*due|balance\s*due|to\s*pay|te\s*betaal|verskuldig|totaal|total|bedrag)/i;
+    const STRONG_KW = /(grand\s*total|total\s*due|amount\s*due|balance\s*due|to\s*pay|te\s*betaal|verskuldig)/i;
+    const NEG_KW = /(sub.?total|sub.?totaal|change|wisselgeld|tender|cash|kontant|round|afronding|\bvat\b|\bbtw\b|card|account|loyalty|points|saving)/i;
+
+    const moneyIn = line => {
+        const out = [];
+        const re = /\d[\d .,]*\d|\d/g;
+        let m;
+        while ((m = re.exec(line))) {
+            const v = normalizeAmount(m[0]);
+            if (v != null && v > 0 && v < 1e7) out.push(v);
+        }
+        return out;
+    };
+
+    const allAmounts = [];
+    const candidates = [];
+    lines.forEach((line, i) => {
+        const amts = moneyIn(line);
+        amts.forEach(v => allAmounts.push(v));
+        if (TOTAL_KW.test(line) && !NEG_KW.test(line)) {
+            let pick = amts.length ? amts[amts.length - 1] : null;
+            if (pick == null && i + 1 < lines.length) {
+                const next = moneyIn(lines[i + 1]);
+                if (next.length) pick = next[next.length - 1];
+            }
+            if (pick != null) candidates.push({ value: pick, priority: STRONG_KW.test(line) ? 2 : 1 });
+        }
+    });
+
+    let total = null;
+    if (candidates.length) {
+        const maxP = Math.max(...candidates.map(c => c.priority));
+        total = Math.max(...candidates.filter(c => c.priority === maxP).map(c => c.value));
+    } else if (allAmounts.length) {
+        total = Math.max(...allAmounts);   // the total is usually the biggest number
+    }
+
+    // shop name: first line near the top that is words, not numbers
+    let shop = '';
+    for (const line of lines) {
+        const letters = line.replace(/[^a-z]/gi, '');
+        if (letters.length >= 3 && !TOTAL_KW.test(line) && !/\d{2}[:/]\d{2}/.test(line)) {
+            shop = titleCase(line.replace(/\s{2,}/g, ' ').slice(0, 40));
+            break;
+        }
+    }
+
+    // date: prefer 2026-06-16, else 16/06/2026 (day first, SA style)
+    let dateISO = '';
+    let dm = text.match(/(20\d{2})[-/.](\d{1,2})[-/.](\d{1,2})/);
+    if (dm) {
+        dateISO = dm[1] + '-' + pad(dm[2]) + '-' + pad(dm[3]);
+    } else {
+        dm = text.match(/(\d{1,2})[-/.](\d{1,2})[-/.](\d{2,4})/);
+        if (dm) {
+            let y = dm[3]; if (y.length === 2) y = '20' + y;
+            dateISO = y + '-' + pad(dm[2]) + '-' + pad(dm[1]);
+        }
+    }
+    if (dateISO && isNaN(Date.parse(dateISO))) dateISO = '';
+
+    const amounts = [...new Set(allAmounts.map(v => Math.round(v * 100) / 100))]
+        .sort((a, b) => b - a).slice(0, 8);
+
+    return { total, amounts, shop, dateISO };
+}
+
+function pad(n) { n = String(n); return n.length < 2 ? '0' + n : n; }
+function titleCase(s) {
+    return s.toLowerCase().replace(/\b[a-z]/g, c => c.toUpperCase());
 }
 
 // ---------- Export (CSV) + Share ----------
