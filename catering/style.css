@@ -272,6 +272,16 @@ form .text-btn { align-self: center; }
 
 .job-actions { margin-top: 26px; text-align: center; }
 
+/* ---------- Scan-first slip capture ---------- */
+#scanIntro { text-align: center; }
+.scan-lead {
+    font-size: 19px;
+    color: var(--muted);
+    margin: 8px 0 18px;
+    line-height: 1.5;
+}
+#scanIntro .text-btn { margin-top: 4px; }
+
 /* ---------- OCR reading the slip ---------- */
 .ocr-status {
     border-radius: 12px;

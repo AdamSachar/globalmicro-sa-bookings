@@ -248,8 +248,33 @@ function addSlip() {
     document.getElementById('slipDelete').hidden = true;
     clearPhoto();
     resetOcrUI();
+    showScanIntro();
     goTo('slip');
-    setTimeout(() => document.getElementById('slipAmount').focus(), 120);
+    // Scanning is the first thing — open the camera straight away.
+    document.getElementById('slipPhoto').click();
+}
+
+// Show the "scan the slip" prompt; hide the details until there's a scan.
+function showScanIntro() {
+    document.getElementById('scanIntro').hidden = false;
+    document.getElementById('slipFields').hidden = true;
+}
+function showFields() {
+    document.getElementById('scanIntro').hidden = true;
+    document.getElementById('slipFields').hidden = false;
+}
+
+// Rare fallback: let her type a slip in by hand.
+function enterByHand() {
+    showFields();
+    resetOcrUI();
+    setTimeout(() => document.getElementById('slipAmount').focus(), 100);
+}
+
+// Re-take the photo of the slip.
+function rescan() {
+    clearPhoto();
+    document.getElementById('slipPhoto').click();
 }
 
 function editSlip(id) {
@@ -265,6 +290,7 @@ function editSlip(id) {
     document.getElementById('slipNote').value = slip.note || '';
     if (slip.photo) showPhoto(slip.photo); else clearPhoto();
     resetOcrUI();
+    showFields();        // editing an existing slip: show the details, no auto-scan
     document.getElementById('slipDelete').hidden = false;
     goTo('slip');
 }
@@ -326,6 +352,7 @@ function previewPhoto(input) {
     reader.onload = e => compressImage(e.target.result, dataUrl => {
         state.pendingPhoto = dataUrl;
         showPhoto(dataUrl);
+        showFields();        // reveal the details once we have a photo
         runOCR(dataUrl);     // read the slip and fill in the total automatically
     });
     reader.readAsDataURL(file);
@@ -753,5 +780,6 @@ init();
 Object.assign(window, {
     newJob, openJob, addSlip, editSlip, saveSlip, deleteSlip, deleteJob,
     updatePrice, previewPhoto, clearPhoto, exportJob, printJob,
-    backupData, restoreData, goBack, installApp
+    backupData, restoreData, goBack, installApp,
+    enterByHand, rescan
 });
