@@ -21,12 +21,18 @@ anywhere), and the totals **add up automatically**.
 - **Print or Save PDF** — a clean one-page summary.
 - **Backup & Restore** — save all your data to a file and load it back later.
 
-## How Mom uses it on the iPhone
+## Getting it on the phone (one time)
 
+**Android (Chrome):**
+1. Open the app link in **Chrome**.
+2. Tap the big **“Install app on this phone”** button (or the **⋮** menu →
+   **Install app / Add to Home screen**).
+3. An app icon appears on the home screen — tap it any time, even offline.
+
+**iPhone (Safari):**
 1. Open the app link in **Safari**.
 2. Tap the **Share** button, then **“Add to Home Screen”**.
-3. Now there's an app icon on the home screen — tap it any time, even with no
-   internet.
+3. An app icon appears on the home screen — tap it any time, even offline.
 
 Everyday use:
 

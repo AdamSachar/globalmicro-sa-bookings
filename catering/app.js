@@ -500,16 +500,53 @@ function toast(msg) {
     toastTimer = setTimeout(() => { t.hidden = true; }, 2600);
 }
 
+// ---------- Install to home screen (Android Chrome) ----------
+let deferredInstall = null;
+window.addEventListener('beforeinstallprompt', e => {
+    e.preventDefault();           // we'll show our own big button instead
+    deferredInstall = e;
+    document.getElementById('installBtn').hidden = false;
+    document.getElementById('installTip').hidden = true;
+});
+function installApp() {
+    if (!deferredInstall) return;
+    deferredInstall.prompt();
+    deferredInstall.userChoice.finally(() => {
+        deferredInstall = null;
+        document.getElementById('installBtn').hidden = true;
+    });
+}
+window.addEventListener('appinstalled', () => {
+    document.getElementById('installBtn').hidden = true;
+    document.getElementById('installTip').hidden = true;
+    toast('Installed! Look for the icon on your home screen.');
+});
+
 // ---------- Start ----------
 function init() {
     buildCategoryOptions();
     renderHome();
     show('home');
 
-    // show the "Add to Home Screen" tip only on iPhone Safari, when not installed
-    const isIOS = /iphone|ipad|ipod/i.test(navigator.userAgent);
-    const installed = window.navigator.standalone === true;
-    if (isIOS && !installed) document.getElementById('installTip').hidden = false;
+    // Help the user install to the home screen, on both Android and iPhone.
+    const ua = navigator.userAgent;
+    const isIOS = /iphone|ipad|ipod/i.test(ua);
+    const isAndroid = /android/i.test(ua);
+    const installed = window.navigator.standalone === true ||
+        window.matchMedia('(display-mode: standalone)').matches;
+    const tip = document.getElementById('installTip');
+    if (!installed) {
+        if (isIOS) {
+            tip.innerHTML = 'Tip: tap the <strong>Share</strong> button in Safari and choose ' +
+                '<strong>“Add to Home Screen”</strong> to use this like a normal app.';
+            tip.hidden = false;
+        } else if (isAndroid) {
+            tip.innerHTML = 'Tip: tap the <strong>⋮</strong> menu in Chrome and choose ' +
+                '<strong>“Install app”</strong> (or <strong>“Add to Home screen”</strong>) ' +
+                'to use this like a normal app.';
+            tip.hidden = false;
+        }
+    }
 
     // register service worker for offline use (ignored if opened from a file)
     if ('serviceWorker' in navigator && location.protocol.startsWith('http')) {
@@ -522,5 +559,5 @@ init();
 Object.assign(window, {
     newJob, openJob, addSlip, editSlip, saveSlip, deleteSlip, deleteJob,
     updatePrice, previewPhoto, clearPhoto, exportJob, printJob,
-    backupData, restoreData, goBack
+    backupData, restoreData, goBack, installApp
 });

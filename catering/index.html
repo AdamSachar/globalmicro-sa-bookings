@@ -43,14 +43,15 @@
             For example: <em>“Smith Wedding”</em> or <em>“Church Lunch”</em>.
         </p>
 
+        <button class="big-btn ghost" type="button" id="installBtn" onclick="installApp()" hidden>
+            &#11015; Install app on this phone
+        </button>
+
         <div class="footer-tools">
             <button class="text-btn" type="button" onclick="backupData()">Save a backup</button>
             <button class="text-btn" type="button" onclick="restoreData()">Restore backup</button>
         </div>
-        <p class="tip" id="installTip" hidden>
-            Tip: In Safari, tap the <strong>Share</strong> button and choose
-            <strong>“Add to Home Screen”</strong> to use this like a normal app.
-        </p>
+        <p class="tip" id="installTip" hidden></p>
     </section>
 
     <!-- ============ SCREEN 2: ONE JOB ============ -->
