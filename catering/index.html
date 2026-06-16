@@ -92,9 +92,28 @@
     <!-- ============ SCREEN 3: ADD / EDIT SLIP ============ -->
     <section id="screen-slip" class="screen" hidden>
         <form id="slipForm" onsubmit="return saveSlip(event)">
-            <label for="slipAmount">Amount on the slip (R)</label>
+
+            <!-- Step 1: photograph the slip — the app reads the total for her -->
+            <label>Step 1 — Photograph the till slip</label>
+            <input id="slipPhoto" type="file" accept="image/*" capture="environment"
+                   onchange="previewPhoto(this)" hidden>
+            <button type="button" id="photoBtn" class="big-btn add"
+                    onclick="document.getElementById('slipPhoto').click()">📷 Take photo of slip</button>
+
+            <div id="ocrStatus" class="ocr-status" hidden></div>
+
+            <div id="photoPreviewWrap" hidden>
+                <img id="photoPreview" alt="Photo of the till slip">
+                <button type="button" class="text-btn danger" onclick="clearPhoto()">Remove photo</button>
+            </div>
+
+            <div id="amountChoices" class="chips" hidden></div>
+
+            <!-- Step 2: the total (filled in from the photo, but always editable) -->
+            <label for="slipAmount">Step 2 — Total on the slip (R)</label>
             <input id="slipAmount" type="text" inputmode="decimal" autocomplete="off"
                    placeholder="0.00" required>
+            <p class="field-hint" id="amountHint" hidden>↑ We read this from the photo. Please check it is right.</p>
 
             <label for="slipShop">Shop name</label>
             <input id="slipShop" type="text" autocomplete="off" placeholder="e.g. Checkers">
@@ -104,14 +123,6 @@
 
             <label for="slipDate">Date on the slip</label>
             <input id="slipDate" type="date">
-
-            <label for="slipPhoto">Photo of the slip (optional)</label>
-            <input id="slipPhoto" type="file" accept="image/*" capture="environment"
-                   onchange="previewPhoto(this)">
-            <div id="photoPreviewWrap" hidden>
-                <img id="photoPreview" alt="Photo of the till slip">
-                <button type="button" class="text-btn danger" onclick="clearPhoto()">Remove photo</button>
-            </div>
 
             <label for="slipNote">Note (optional)</label>
             <input id="slipNote" type="text" autocomplete="off" placeholder="e.g. for the cake">
