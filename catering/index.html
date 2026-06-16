@@ -93,41 +93,48 @@
     <section id="screen-slip" class="screen" hidden>
         <form id="slipForm" onsubmit="return saveSlip(event)">
 
-            <!-- Step 1: photograph the slip — the app reads the total for her -->
-            <label>Step 1 — Photograph the till slip</label>
             <input id="slipPhoto" type="file" accept="image/*" capture="environment"
                    onchange="previewPhoto(this)" hidden>
-            <button type="button" id="photoBtn" class="big-btn add"
-                    onclick="document.getElementById('slipPhoto').click()">📷 Take photo of slip</button>
+
+            <!-- Scanning the slip is the main way to capture it -->
+            <div id="scanIntro">
+                <p class="scan-lead">📷 Photograph the till slip — the total is read in for you.</p>
+                <button type="button" id="photoBtn" class="big-btn add"
+                        onclick="document.getElementById('slipPhoto').click()">📷 Scan the slip</button>
+                <button type="button" class="text-btn" onclick="enterByHand()">Type it in by hand instead</button>
+            </div>
 
             <div id="ocrStatus" class="ocr-status" hidden></div>
 
             <div id="photoPreviewWrap" hidden>
                 <img id="photoPreview" alt="Photo of the till slip">
-                <button type="button" class="text-btn danger" onclick="clearPhoto()">Remove photo</button>
+                <button type="button" class="text-btn" onclick="rescan()">📷 Scan again</button>
             </div>
 
             <div id="amountChoices" class="chips" hidden></div>
 
-            <!-- Step 2: the total (filled in from the photo, but always editable) -->
-            <label for="slipAmount">Step 2 — Total on the slip (R)</label>
-            <input id="slipAmount" type="text" inputmode="decimal" autocomplete="off"
-                   placeholder="0.00" required>
-            <p class="field-hint" id="amountHint" hidden>↑ We read this from the photo. Please check it is right.</p>
+            <!-- Details: filled in from the scan, shown for her to check -->
+            <div id="slipFields" hidden>
+                <label for="slipAmount">Total on the slip (R)</label>
+                <input id="slipAmount" type="text" inputmode="decimal" autocomplete="off"
+                       placeholder="0.00" required>
+                <p class="field-hint" id="amountHint" hidden>↑ Read from the photo. Please check it is right.</p>
 
-            <label for="slipShop">Shop name</label>
-            <input id="slipShop" type="text" autocomplete="off" placeholder="e.g. Checkers">
+                <label for="slipShop">Shop name</label>
+                <input id="slipShop" type="text" autocomplete="off" placeholder="e.g. Checkers">
 
-            <label for="slipCategory">What was it for?</label>
-            <select id="slipCategory"></select>
+                <label for="slipCategory">What was it for?</label>
+                <select id="slipCategory"></select>
 
-            <label for="slipDate">Date on the slip</label>
-            <input id="slipDate" type="date">
+                <label for="slipDate">Date on the slip</label>
+                <input id="slipDate" type="date">
 
-            <label for="slipNote">Note (optional)</label>
-            <input id="slipNote" type="text" autocomplete="off" placeholder="e.g. for the cake">
+                <label for="slipNote">Note (optional)</label>
+                <input id="slipNote" type="text" autocomplete="off" placeholder="e.g. for the cake">
 
-            <button class="big-btn add" type="submit">Save Slip</button>
+                <button class="big-btn add" type="submit">Save Slip</button>
+            </div>
+
             <button class="text-btn" type="button" onclick="goBack()">Cancel</button>
             <button id="slipDelete" class="text-btn danger" type="button" onclick="deleteSlip()" hidden>Delete this slip</button>
         </form>

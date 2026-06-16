@@ -1,7 +1,7 @@
 /* Service worker: lets the app open and work without internet,
    so it stays fast and reliable on a phone with a poor signal. */
 
-const CACHE = 'till-slips-v2';
+const CACHE = 'till-slips-v3';
 const FILES = [
     './',
     './index.html',

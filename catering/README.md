@@ -41,8 +41,9 @@ anywhere), and the totals **add up automatically**.
 Everyday use:
 
 - Tap **+ New Job**, give it a name.
-- Tap **+ Add Till Slip** → **📷 Take photo of slip**. The app reads the total
-  and fills it in — she just checks it and taps **Save**.
+- Tap **+ Add Till Slip** — the **camera opens straight away**. Photograph the
+  slip and the total is read in for her. She just checks it and taps **Save**.
+  (There's a small *"Type it in by hand instead"* option for the rare case.)
 - The job total updates by itself.
 - When the event is done, tap **Export / Share** to send it on.
 
