@@ -16,7 +16,6 @@ anywhere), and the totals **add up automatically**.
   shows the grand total of all jobs.
 - **What to charge** — type a mark-up % and it suggests a price to quote the
   customer.
-- **VAT (15%)** breakdown for the accountant.
 - **Export / Share** — send a job as a spreadsheet (CSV) by email, WhatsApp or
   save to Files, straight from the iPhone share sheet.
 - **Print or Save PDF** — a clean one-page summary.

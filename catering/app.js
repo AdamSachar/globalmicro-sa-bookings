@@ -199,13 +199,9 @@ function renderJob() {
         });
     }
 
-    // price + VAT helpers
+    // price helper
     document.getElementById('markupInput').value = job.markup || '';
     updatePrice();
-
-    const excl = total / 1.15;
-    document.getElementById('vatExcl').textContent = R(excl);
-    document.getElementById('vatPart').textContent = R(total - excl);
 }
 
 function updatePrice() {
