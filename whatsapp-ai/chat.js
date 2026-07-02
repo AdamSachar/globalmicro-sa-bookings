@@ -15,6 +15,8 @@
 const STORAGE_KEY = 'familyWaAi.config.v1';     // shared with the setup UI
 const KEY_KEY = 'familyWaAi.apiKey';
 const CHAT_KEY_PREFIX = 'familyWaAi.chat.';      // + member id
+const AUTH_KEY_PREFIX = 'familyWaAi.auth.';      // + member id -> {pinHash, fails}
+const MAX_PIN_FAILS = 5;                         // wrong PINs before question reset
 const MODEL = 'claude-sonnet-5';
 const MAX_TURNS_SENT = 20;                       // history window sent to the AI
 
@@ -124,12 +126,169 @@ function importConfigFile(file) {
     reader.readAsText(file);
 }
 
-// ---------- screen 2: chat ----------
+// ---------- verification gate: secret question + PIN ----------
+// Every login goes through this. First time (or after a PIN reset) the member
+// must answer the secret question the host set for them, then create a PIN.
+// After that, the PIN unlocks the chat. 5 wrong PINs wipes the PIN and forces
+// the secret question again.
+
+let authMember = null;
+let authMode = null; // 'question' | 'create' | 'enter'
+
+function loadAuth(id) {
+    try { return JSON.parse(localStorage.getItem(AUTH_KEY_PREFIX + id)) || {}; }
+    catch (e) { return {}; }
+}
+function saveAuth(id, rec) {
+    localStorage.setItem(AUTH_KEY_PREFIX + id, JSON.stringify(rec));
+}
+
+async function hashPin(pin) {
+    try {
+        const buf = await crypto.subtle.digest('SHA-256', new TextEncoder().encode('familyWaAi:' + pin));
+        return Array.from(new Uint8Array(buf)).map(b => b.toString(16).padStart(2, '0')).join('');
+    } catch (e) {
+        // Very old browser fallback — still better than plain text.
+        let h = 0;
+        const s = 'familyWaAi:' + pin;
+        for (let i = 0; i < s.length; i++) h = (h * 31 + s.charCodeAt(i)) | 0;
+        return 'weak:' + h;
+    }
+}
+
+function normalizeAnswer(s) {
+    return (s || '').toLowerCase().trim().replace(/\s+/g, ' ').replace(/[.!?,]+$/, '');
+}
+
+function hasQuestion(m) {
+    return !!(m.secretQuestion && m.secretAnswer);
+}
+
 function startChat(m) {
+    authMember = m;
+    const rec = loadAuth(m.id);
+    document.getElementById('pickScreen').hidden = true;
+    document.getElementById('chatScreen').hidden = true;
+    document.getElementById('authScreen').hidden = false;
+    document.getElementById('authTitle').textContent = `Hi ${m.name}!`;
+    setAuthMsg('');
+
+    if (rec.pinHash) {
+        showAuthPin('enter');
+    } else if (hasQuestion(m)) {
+        showAuthQuestion();
+    } else {
+        // Host hasn't set a secret question for this person yet.
+        showAuthPin('create',
+            `No secret question is set up for you yet — ask ${config.host.name || 'the host'} to add one. For now, just create your PIN.`);
+    }
+}
+
+function setAuthMsg(text, good) {
+    const el = document.getElementById('authMsg');
+    el.textContent = text;
+    el.className = 'auth-msg' + (good ? ' good' : '');
+}
+
+function showAuthQuestion() {
+    authMode = 'question';
+    document.getElementById('authQuestionBox').hidden = false;
+    document.getElementById('authPinBox').hidden = true;
+    document.getElementById('authSub').textContent = 'Answer your secret question so we know it’s really you.';
+    document.getElementById('authQuestion').textContent = authMember.secretQuestion;
+    const input = document.getElementById('authAnswer');
+    input.value = '';
+    input.focus();
+}
+
+function showAuthPin(mode, subText) {
+    authMode = mode;
+    document.getElementById('authQuestionBox').hidden = true;
+    document.getElementById('authPinBox').hidden = false;
+    const creating = mode === 'create';
+    document.getElementById('authSub').textContent = subText ||
+        (creating ? 'Choose a PIN — you’ll use it every time you open the chat.'
+                  : 'Enter your PIN to open the chat.');
+    document.getElementById('pinLabel').textContent = creating ? 'Create a PIN (4–8 digits)' : 'Enter your PIN';
+    document.getElementById('pinBtn').textContent = creating ? 'Set PIN & start chatting' : 'Unlock';
+    document.getElementById('pinInput2').hidden = !creating;
+    document.getElementById('forgotPinBtn').hidden = creating || !hasQuestion(authMember);
+    document.getElementById('pinInput').value = '';
+    document.getElementById('pinInput2').value = '';
+    document.getElementById('pinInput').focus();
+}
+
+function checkAnswer() {
+    const given = normalizeAnswer(document.getElementById('authAnswer').value);
+    if (!given) return;
+    const rec = loadAuth(authMember.id);
+    if (given === normalizeAnswer(authMember.secretAnswer)) {
+        rec.qFails = 0;
+        // Correct — any old PIN is void; they create a fresh one.
+        delete rec.pinHash;
+        rec.fails = 0;
+        saveAuth(authMember.id, rec);
+        setAuthMsg('✓ That’s you! Now set your PIN.', true);
+        showAuthPin('create');
+    } else {
+        rec.qFails = (rec.qFails || 0) + 1;
+        saveAuth(authMember.id, rec);
+        if (rec.qFails >= MAX_PIN_FAILS) {
+            setAuthMsg(`Too many wrong answers. Ask ${config.host.name || 'the host'} to check your profile.`);
+            document.getElementById('authAnswerBtn').disabled = true;
+            setTimeout(() => {
+                document.getElementById('authAnswerBtn').disabled = false;
+                const r = loadAuth(authMember.id); r.qFails = 0; saveAuth(authMember.id, r);
+            }, 60000);
+        } else {
+            setAuthMsg(`That’s not right (${rec.qFails} of ${MAX_PIN_FAILS} tries). Try again.`);
+        }
+    }
+}
+
+async function submitPin() {
+    const pin = document.getElementById('pinInput').value.trim();
+    if (!/^\d{4,8}$/.test(pin)) { setAuthMsg('The PIN must be 4 to 8 digits.'); return; }
+
+    const rec = loadAuth(authMember.id);
+    if (authMode === 'create') {
+        const repeat = document.getElementById('pinInput2').value.trim();
+        if (pin !== repeat) { setAuthMsg('The two PINs don’t match — try again.'); return; }
+        rec.pinHash = await hashPin(pin);
+        rec.fails = 0;
+        saveAuth(authMember.id, rec);
+        openChat(authMember);
+        return;
+    }
+
+    // authMode === 'enter'
+    if (rec.pinHash === await hashPin(pin)) {
+        rec.fails = 0;
+        saveAuth(authMember.id, rec);
+        openChat(authMember);
+    } else {
+        rec.fails = (rec.fails || 0) + 1;
+        if (rec.fails >= MAX_PIN_FAILS && hasQuestion(authMember)) {
+            delete rec.pinHash;
+            rec.fails = 0;
+            saveAuth(authMember.id, rec);
+            setAuthMsg('Too many wrong PINs. Answer your secret question to set a new one.');
+            showAuthQuestion();
+        } else {
+            saveAuth(authMember.id, rec);
+            setAuthMsg(`Wrong PIN (${rec.fails} of ${MAX_PIN_FAILS} tries).`);
+            document.getElementById('pinInput').value = '';
+        }
+    }
+}
+
+// ---------- screen: chat ----------
+function openChat(m) {
     member = m;
     history = loadHistory(m.id);
 
     document.getElementById('pickScreen').hidden = true;
+    document.getElementById('authScreen').hidden = true;
     document.getElementById('chatScreen').hidden = false;
 
     const hostName = config.host.name || 'Host';
@@ -325,6 +484,27 @@ function wireUp() {
         history = [];
         localStorage.removeItem(CHAT_KEY_PREFIX + member.id);
         renderAll();
+    });
+
+    // Verification screen.
+    document.getElementById('authAnswerBtn').addEventListener('click', checkAnswer);
+    document.getElementById('authAnswer').addEventListener('keydown', e => {
+        if (e.key === 'Enter') checkAnswer();
+    });
+    document.getElementById('pinBtn').addEventListener('click', submitPin);
+    ['pinInput', 'pinInput2'].forEach(id =>
+        document.getElementById(id).addEventListener('keydown', e => {
+            if (e.key === 'Enter') submitPin();
+        }));
+    document.getElementById('forgotPinBtn').addEventListener('click', () => {
+        setAuthMsg('');
+        showAuthQuestion();
+    });
+    document.getElementById('authBackBtn').addEventListener('click', () => {
+        authMember = null;
+        document.getElementById('authScreen').hidden = true;
+        if (location.search) { location.href = 'chat.html'; return; }
+        showPicker();
     });
 
     document.getElementById('saveKeyBtn').addEventListener('click', saveKey);

@@ -35,7 +35,33 @@
         </div>
     </div>
 
-    <!-- ============ SCREEN 2: the chat ============ -->
+    <!-- ============ SCREEN 2: prove it's you (secret question + PIN) ============ -->
+    <div id="authScreen" class="pick-screen" hidden>
+        <div class="pick-card">
+            <div class="pick-logo">🔐</div>
+            <h1 id="authTitle">Prove it's you</h1>
+            <p class="pick-sub" id="authSub"></p>
+
+            <div id="authQuestionBox" class="auth-box" hidden>
+                <p class="auth-question" id="authQuestion"></p>
+                <input type="text" id="authAnswer" placeholder="Your answer" autocomplete="off">
+                <button class="btn-primary" id="authAnswerBtn">Check answer</button>
+            </div>
+
+            <div id="authPinBox" class="auth-box" hidden>
+                <label id="pinLabel" for="pinInput">Enter your PIN</label>
+                <input type="password" inputmode="numeric" id="pinInput" placeholder="PIN (4–8 digits)" maxlength="8" autocomplete="off">
+                <input type="password" inputmode="numeric" id="pinInput2" placeholder="Repeat the PIN" maxlength="8" autocomplete="off" hidden>
+                <button class="btn-primary" id="pinBtn">Unlock</button>
+                <button class="link-btn" id="forgotPinBtn" hidden>Forgot your PIN?</button>
+            </div>
+
+            <p class="auth-msg" id="authMsg"></p>
+            <button class="link-btn" id="authBackBtn">‹ Not you? Go back</button>
+        </div>
+    </div>
+
+    <!-- ============ SCREEN 3: the chat ============ -->
     <div id="chatScreen" class="chat-screen" hidden>
         <header class="chat-top">
             <button class="icon-btn back-btn" id="backBtn" aria-label="Back">‹</button>

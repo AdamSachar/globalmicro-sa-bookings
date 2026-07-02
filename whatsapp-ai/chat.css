@@ -38,6 +38,19 @@
 .key-box label { margin-top: 0; }
 .key-box input { margin-bottom: 10px; }
 
+/* ---------- screen: verification ---------- */
+.auth-box { text-align: left; margin-top: 6px; }
+.auth-box label { margin-top: 0; }
+.auth-box input { margin-bottom: 10px; font-size: 17px; letter-spacing: 1px; }
+.auth-box .btn-primary { width: 100%; }
+.auth-question {
+    background: #f2fbf5; border: 1px solid #cdecd8; border-radius: 10px;
+    padding: 12px 14px; font-weight: 600; font-size: 15.5px; text-align: left;
+}
+.auth-msg { min-height: 20px; font-size: 13.5px; color: var(--danger); margin: 10px 0 4px; }
+.auth-msg.good { color: var(--wa-green-light); }
+#forgotPinBtn, #authBackBtn { margin-top: 8px; }
+
 /* ---------- screen 2: chat ---------- */
 .chat-screen { height: 100dvh; display: flex; flex-direction: column; background: #efe7de; }
 

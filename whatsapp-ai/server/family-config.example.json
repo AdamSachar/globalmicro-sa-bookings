@@ -18,6 +18,8 @@
             "tone": "warm, gentle",
             "topics": ["grandkids", "church", "garden", "her health", "weather"],
             "avoid": ["money", "politics", "work stress"],
+            "secretQuestion": "What do I always bake when you visit?",
+            "secretAnswer": "melktert",
             "autoReply": true
         },
         {
@@ -31,6 +33,8 @@
             "tone": "playful, casual",
             "topics": ["rugby", "braai plans", "gym", "weekend"],
             "avoid": ["money"],
+            "secretQuestion": "What nickname did Dad call you as a kid?",
+            "secretAnswer": "Spanner",
             "autoReply": true
         }
     ]

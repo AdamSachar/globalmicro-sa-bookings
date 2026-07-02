@@ -9,6 +9,14 @@
 
 const STORAGE_KEY = 'familyWaAi.config.v1';
 
+// First-run starter list: the family members this system is being set up for.
+// They appear pre-created the first time the app opens; fill in each one's
+// details (especially their number and secret question) by tapping them.
+const STARTER_MEMBERS = [
+    'Eric', 'Estelle', 'Wayne', 'Dean', 'Andy',
+    'Billy', 'Nicky', 'Adam', 'Aaron', 'Lungi',
+];
+
 // ---------- state ----------
 let config = loadConfig();
 let editingId = null; // id of member being edited, or null for "new"
@@ -21,7 +29,18 @@ function loadConfig() {
     } catch (e) {
         console.warn('Could not read saved config:', e);
     }
-    return { host: {}, members: [] };
+    // Nothing saved yet — pre-create a profile for each family member.
+    return {
+        host: {},
+        members: STARTER_MEMBERS.map(name => ({
+            id: 'm_' + name.toLowerCase(),
+            name,
+            phone: '', relationship: '', about: '', engage: '', tone: '',
+            topics: [], avoid: [],
+            secretQuestion: '', secretAnswer: '',
+            autoReply: true,
+        })),
+    };
 }
 
 function normalize(c) {
@@ -105,8 +124,8 @@ function renderMembers() {
         row.innerHTML = `
             <div class="avatar">${escapeHtml(initials(m.name))}</div>
             <div class="info">
-                <div class="name">${escapeHtml(m.name || 'Unnamed')}</div>
-                <div class="meta">${escapeHtml(m.relationship || '')}${m.phone ? ' · ' + escapeHtml(m.phone) : ''}</div>
+                <div class="name">${escapeHtml(m.name || 'Unnamed')} ${m.secretQuestion && m.secretAnswer ? '🔐' : ''}</div>
+                <div class="meta">${escapeHtml(m.relationship || '')}${m.phone ? ' · ' + escapeHtml(m.phone) : ''}${!(m.secretQuestion && m.secretAnswer) ? ' · no secret question yet' : ''}</div>
             </div>
             <span class="badge ${m.autoReply ? 'on' : 'off'}">${m.autoReply ? 'Auto' : 'Off'}</span>
         `;
@@ -135,6 +154,8 @@ function openModal(id) {
     document.getElementById('mTone').value = m.tone || '';
     document.getElementById('mTopics').value = (m.topics || []).join(', ');
     document.getElementById('mAvoid').value = (m.avoid || []).join(', ');
+    document.getElementById('mSecretQ').value = m.secretQuestion || '';
+    document.getElementById('mSecretA').value = m.secretAnswer || '';
     document.getElementById('mAuto').checked = m.autoReply !== false;
     document.getElementById('deleteMemberBtn').hidden = !id;
     document.getElementById('previewOut').hidden = true;
@@ -158,6 +179,8 @@ function readMemberFromForm() {
         tone: document.getElementById('mTone').value.trim(),
         topics: splitList(document.getElementById('mTopics').value),
         avoid: splitList(document.getElementById('mAvoid').value),
+        secretQuestion: document.getElementById('mSecretQ').value.trim(),
+        secretAnswer: document.getElementById('mSecretA').value.trim(),
         autoReply: document.getElementById('mAuto').checked,
     };
 }

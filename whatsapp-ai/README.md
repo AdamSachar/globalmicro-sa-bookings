@@ -45,6 +45,30 @@ Sharing with family:
 Test conversations stay in the phone's browser storage (🗑 in the chat clears
 one). Nothing goes to WhatsApp; the only network calls are to the Claude API.
 
+### Login verification (secret question + PIN)
+
+Each family member must prove who they are before the chat opens:
+
+1. **First login on a device:** they are asked the **secret question** you set
+   for them in their profile (e.g. *"Where did we go fishing every December?"*).
+   Answers are checked ignoring case and extra spaces. After 5 wrong answers
+   the screen locks for a minute.
+2. **They then create their own PIN** (4–8 digits). The PIN is stored only on
+   that device, as a hash.
+3. **Every login after that:** just the PIN. 5 wrong PINs wipes it and forces
+   the secret question again; there's also a "Forgot your PIN?" link that does
+   the same.
+
+Set the question/answer per member in the setup UI (members without one show
+"no secret question yet" in the list — they can only be protected by a PIN, so
+add a question for everyone). Note this is honest-family security: it keeps
+siblings from chatting as each other, but the answers live inside the config
+file, so only share that file with people you trust.
+
+The setup UI starts pre-loaded with profiles for: Eric, Estelle, Wayne, Dean,
+Andy, Billy, Nicky, Adam, Aaron and Lungi — tap each to fill in their details
+and secret question.
+
 ---
 
 ## 1. Fill in profiles (the Setup UI)
