@@ -1,6 +1,6 @@
 /* Service worker: lets the setup tool open offline and install to the home screen. */
 
-const CACHE = 'family-wa-ai-v2';
+const CACHE = 'granted-v3';
 const FILES = [
     './',
     './index.html',

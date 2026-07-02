@@ -75,7 +75,7 @@ function showPicker() {
     document.getElementById('pickScreen').hidden = false;
 
     const hostName = config.host && config.host.name;
-    document.getElementById('pickTitle').textContent = hostName ? `Chat with ${hostName}` : 'Family Chat';
+    document.getElementById('pickTitle').textContent = hostName ? `Chat with ${hostName}` : 'Granted';
 
     const list = document.getElementById('pickList');
     list.innerHTML = '';

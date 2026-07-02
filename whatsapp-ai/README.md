@@ -1,4 +1,8 @@
-# Family WhatsApp AI
+# Granted — Grant's family line
+
+> *Sessions with Grant, for a family that should never be taken for granted.*
+> Grant is the family's psychologist-counsellor; **Granted** is his
+> always-open door.
 
 A WhatsApp bot that **replies to your family as you**, using an AI. You describe
 yourself once (the *host*), then write a short **profile for each family member** —

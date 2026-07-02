@@ -1,7 +1,7 @@
 {
-    "name": "Family WhatsApp AI — Profiles",
-    "short_name": "Family AI",
-    "description": "Set up the AI host and family profiles that power your WhatsApp auto-reply bot.",
+    "name": "Granted — Grant's family line",
+    "short_name": "Granted",
+    "description": "Grant's family counselling line — AI-assisted family chat. Never take family for granted.",
     "start_url": "./index.html",
     "scope": "./",
     "display": "standalone",
