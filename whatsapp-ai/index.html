@@ -1,0 +1,169 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="theme-color" content="#075e54">
+    <title>Granted — Setup</title>
+    <link rel="manifest" href="manifest.json">
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <header class="topbar">
+        <div class="brand">
+            <span class="logo">🛋️</span>
+            <div>
+                <h1>Granted</h1>
+                <p class="sub">Grant's family line — the counsellor is always in</p>
+            </div>
+        </div>
+    </header>
+
+    <main>
+        <p class="intro">
+            This is where you <strong>set up</strong> the assistant. You describe
+            <strong>yourself</strong> (the host the AI speaks as), then add a
+            <strong>profile for each family member</strong> — who they are and how the AI
+            should chat to them. When you're done, tap <em>Save &amp; Export</em> and put
+            the file on your server (see the README). Everything here stays on this device.
+        </p>
+
+        <!-- ===================== HOST AGENT ===================== -->
+        <section class="card" id="hostCard">
+            <div class="card-head">
+                <h2>👤 You — the host</h2>
+                <span class="hint">The AI writes as if it were you.</span>
+            </div>
+
+            <label for="hostName">Your name</label>
+            <input type="text" id="hostName" placeholder="e.g. Grant">
+
+            <label for="hostTone">How you speak (tone &amp; style)</label>
+            <textarea id="hostTone" rows="3"
+                placeholder="e.g. Warm and casual. Short messages. Uses a few emojis. Afrikaans/English mix. Calls people 'boet' and 'my girl'."></textarea>
+
+            <label for="hostAbout">About you (things the AI can mention)</label>
+            <textarea id="hostAbout" rows="3"
+                placeholder="e.g. I run a small IT business in Joburg. Two kids. Love rugby and braais. Currently busy with a big work project."></textarea>
+
+            <label for="hostBoundaries">Rules — what the AI must NEVER do</label>
+            <textarea id="hostBoundaries" rows="3"
+                placeholder="e.g. Never agree to lend money or send cash. Never make firm promises about dates/plans — say 'I'll check and come back'. Never discuss business finances. If unsure, keep it vague and friendly."></textarea>
+
+            <label for="hostSignoff">How you usually sign off (optional)</label>
+            <input type="text" id="hostSignoff" placeholder="e.g. Chat soon 👍">
+        </section>
+
+        <!-- ===================== FAMILY MEMBERS ===================== -->
+        <section class="card">
+            <div class="card-head">
+                <h2>👨‍👩‍👧‍👦 Family members</h2>
+                <button class="btn-primary" id="addMemberBtn">+ Add member</button>
+            </div>
+            <p class="hint" id="memberCount"></p>
+            <div id="memberList" class="member-list"></div>
+        </section>
+
+        <!-- ===================== TRY IT ===================== -->
+        <section class="card">
+            <div class="card-head">
+                <h2>🧪 Try it now — test chat</h2>
+            </div>
+            <p class="hint">
+                Chat with the AI right here in the browser, before setting up WhatsApp.
+                It uses the exact same personas as the real bot. You'll need a Claude API
+                key the first time (asked on the next screen).
+            </p>
+            <div class="button-row">
+                <a class="btn-primary" style="text-decoration:none; display:inline-block;" href="chat.html">💬 Open test chat</a>
+            </div>
+        </section>
+
+        <!-- ===================== SAVE / EXPORT ===================== -->
+        <section class="card">
+            <div class="card-head">
+                <h2>💾 Save &amp; share config</h2>
+            </div>
+            <p class="hint">
+                Your setup is saved automatically on this device. Use these to move it to the
+                server that runs the WhatsApp bot, or to back it up.
+            </p>
+            <div class="button-row">
+                <button class="btn-primary" id="exportBtn">⬇️ Download config file</button>
+                <button class="btn-secondary" id="importBtn">⬆️ Load a config file</button>
+                <button class="btn-secondary" id="copyBtn">📋 Copy as text</button>
+            </div>
+            <input type="file" id="importFile" accept="application/json,.json" hidden>
+            <p id="saveMsg" class="save-msg"></p>
+        </section>
+    </main>
+
+    <!-- ===================== MEMBER EDITOR MODAL ===================== -->
+    <div class="modal-backdrop" id="memberModal" hidden>
+        <div class="modal" role="dialog" aria-modal="true" aria-labelledby="modalTitle">
+            <div class="modal-head">
+                <h3 id="modalTitle">Add family member</h3>
+                <button class="icon-btn" id="closeModalBtn" aria-label="Close">✕</button>
+            </div>
+            <div class="modal-body">
+                <label for="mName">Name</label>
+                <input type="text" id="mName" placeholder="e.g. Mom / Sarah">
+
+                <label for="mPhone">Their WhatsApp number</label>
+                <input type="tel" id="mPhone" placeholder="e.g. +27 82 123 4567">
+                <span class="field-hint">Include the country code. This is how the bot knows who is messaging.</span>
+
+                <label for="mRelationship">Relationship to you</label>
+                <input type="text" id="mRelationship" placeholder="e.g. My mother">
+
+                <label for="mAbout">About them</label>
+                <textarea id="mAbout" rows="3"
+                    placeholder="e.g. 72, lives in Durban, worries a lot, loves hearing about the grandkids. Health isn't great. Very religious."></textarea>
+
+                <label for="mEngage">How should the AI chat to them?</label>
+                <textarea id="mEngage" rows="3"
+                    placeholder="e.g. Be extra warm and reassuring. Ask about her health and church. Keep it light — don't mention work stress. Reply in longer, chatty messages."></textarea>
+
+                <label for="mTone">Their tone (one word or two)</label>
+                <input type="text" id="mTone" placeholder="e.g. warm, gentle, playful, formal">
+
+                <label for="mTopics">Safe topics (comma separated)</label>
+                <input type="text" id="mTopics" placeholder="e.g. grandkids, garden, church, weather">
+
+                <label for="mAvoid">Topics to avoid (comma separated)</label>
+                <input type="text" id="mAvoid" placeholder="e.g. money, politics, my work">
+
+                <label for="mSecretQ">🔐 Secret question (proves it's really them)</label>
+                <input type="text" id="mSecretQ" placeholder="e.g. What did we braai at your 40th?">
+
+                <label for="mSecretA">Secret answer</label>
+                <input type="text" id="mSecretA" placeholder="Something only they would know">
+                <span class="field-hint">Asked the first time they open the chat on a phone, before they set their PIN — and again if they forget the PIN. Without a question set, anyone with the link could chat as them.</span>
+
+                <label class="switch-row">
+                    <input type="checkbox" id="mAuto" checked>
+                    <span>Let the AI reply automatically to this person</span>
+                </label>
+
+                <div class="preview-box">
+                    <button type="button" class="link-btn" id="previewBtn">🔎 Preview what the AI will be told</button>
+                    <pre id="previewOut" hidden></pre>
+                </div>
+            </div>
+            <div class="modal-foot">
+                <button class="btn-danger" id="deleteMemberBtn" hidden>Delete</button>
+                <span class="spacer"></span>
+                <button class="btn-secondary" id="cancelMemberBtn">Cancel</button>
+                <button class="btn-primary" id="saveMemberBtn">Save member</button>
+            </div>
+        </div>
+    </div>
+
+    <footer class="foot">
+        <p>Private setup tool — data stays on this device. The bot itself runs on your server.
+           See <code>whatsapp-ai/README.md</code>.</p>
+    </footer>
+
+    <script src="app.js"></script>
+</body>
+</html>

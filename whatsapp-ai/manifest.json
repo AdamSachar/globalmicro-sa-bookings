@@ -1,0 +1,19 @@
+{
+    "name": "Granted — Grant's family line",
+    "short_name": "Granted",
+    "description": "Grant's family counselling line — AI-assisted family chat. Never take family for granted.",
+    "start_url": "./index.html",
+    "scope": "./",
+    "display": "standalone",
+    "orientation": "portrait",
+    "background_color": "#ece5dd",
+    "theme_color": "#075e54",
+    "icons": [
+        {
+            "src": "icon.svg",
+            "sizes": "any",
+            "type": "image/svg+xml",
+            "purpose": "any maskable"
+        }
+    ]
+}

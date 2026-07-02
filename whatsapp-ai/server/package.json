@@ -1,0 +1,15 @@
+{
+    "name": "family-whatsapp-ai",
+    "version": "1.0.0",
+    "private": true,
+    "description": "WhatsApp auto-reply bot that chats to family as you, using per-person AI profiles.",
+    "main": "index.js",
+    "type": "commonjs",
+    "engines": {
+        "node": ">=18"
+    },
+    "scripts": {
+        "start": "node index.js",
+        "test-reply": "node test-reply.js"
+    }
+}

@@ -1,0 +1,5 @@
+# Never commit secrets, real family data, or runtime state.
+.env
+family-config.json
+.memory.json
+node_modules/
