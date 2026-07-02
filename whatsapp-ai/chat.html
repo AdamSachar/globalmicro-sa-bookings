@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+    <meta name="theme-color" content="#075e54">
+    <title>Family Chat — Test</title>
+    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="chat.css">
+</head>
+<body class="chat-page">
+
+    <!-- ============ SCREEN 1: pick who you are ============ -->
+    <div id="pickScreen" class="pick-screen" hidden>
+        <div class="pick-card">
+            <div class="pick-logo">💬</div>
+            <h1 id="pickTitle">Family Chat</h1>
+            <p class="pick-sub" id="pickSub">Who are you? Tap your name to start chatting.</p>
+
+            <div id="pickList" class="pick-list"></div>
+
+            <div id="noConfig" class="no-config" hidden>
+                <p>No family profiles found on this device.</p>
+                <button class="btn-primary" id="pickImportBtn">⬆️ Load config file</button>
+                <p class="pick-note">…or set up profiles first in the <a href="index.html">setup tool</a>.</p>
+                <input type="file" id="pickImportFile" accept="application/json,.json" hidden>
+            </div>
+
+            <div class="key-box" id="keyBox" hidden>
+                <label for="apiKeyInput">Claude API key (asked once, stays on this device)</label>
+                <input type="password" id="apiKeyInput" placeholder="sk-ant-…" autocomplete="off">
+                <button class="btn-primary" id="saveKeyBtn">Save key</button>
+                <p class="pick-note">Get one at console.anthropic.com → API keys.</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- ============ SCREEN 2: the chat ============ -->
+    <div id="chatScreen" class="chat-screen" hidden>
+        <header class="chat-top">
+            <button class="icon-btn back-btn" id="backBtn" aria-label="Back">‹</button>
+            <div class="chat-avatar" id="chatAvatar">G</div>
+            <div class="chat-who">
+                <div class="chat-name" id="chatName">Host</div>
+                <div class="chat-status" id="chatStatus">online</div>
+            </div>
+            <button class="icon-btn" id="clearBtn" title="Clear this conversation" aria-label="Clear conversation">🗑</button>
+        </header>
+
+        <div class="chat-scroll" id="chatScroll">
+            <div class="day-chip">Today</div>
+            <div class="notice-chip">🔒 Test chat — messages go to the AI, not to real WhatsApp.</div>
+            <div id="messages"></div>
+            <div id="typing" class="msg them typing-msg" hidden>
+                <span class="dot"></span><span class="dot"></span><span class="dot"></span>
+            </div>
+        </div>
+
+        <footer class="chat-input-bar">
+            <textarea id="msgInput" rows="1" placeholder="Message" enterkeyhint="send"></textarea>
+            <button id="sendBtn" class="send-btn" aria-label="Send">➤</button>
+        </footer>
+    </div>
+
+    <script src="chat.js"></script>
+</body>
+</html>

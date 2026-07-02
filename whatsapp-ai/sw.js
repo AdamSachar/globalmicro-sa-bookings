@@ -1,11 +1,14 @@
 /* Service worker: lets the setup tool open offline and install to the home screen. */
 
-const CACHE = 'family-wa-ai-v1';
+const CACHE = 'family-wa-ai-v2';
 const FILES = [
     './',
     './index.html',
     './style.css',
     './app.js',
+    './chat.html',
+    './chat.css',
+    './chat.js',
     './manifest.json',
     './icon.svg'
 ];

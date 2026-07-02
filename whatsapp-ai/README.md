@@ -18,6 +18,35 @@ There are two pieces:
 
 ---
 
+## Try it first — the web test chat (no WhatsApp, no server)
+
+`chat.html` is a WhatsApp-style chat that runs entirely in the browser, using the
+**exact same personas** as the real bot. It's the fastest way to test the whole
+idea end-to-end with your family:
+
+1. Fill in profiles in the setup UI (or just to look around, load
+   `server/family-config.example.json` when the chat asks).
+2. Open `whatsapp-ai/chat.html` on the hosted site.
+3. Enter a Claude API key once (from console.anthropic.com — stored only on the
+   device).
+4. Tap your name and chat. The AI replies as the host, per that person's profile.
+
+Sharing with family:
+
+- Each person opens the same URL on their phone; profiles must be on their
+  device too (send them your `family-config.json` to load, or set it up for
+  them once).
+- Deep links: `chat.html?m=<memberId>` opens straight into one person's chat,
+  and `chat.html#key=sk-ant-...` pre-loads the API key then removes it from the
+  address bar — so you can send one link that just works. **Anyone with that
+  link can use your key**, so only share it with family and revoke the key at
+  console.anthropic.com when the test is done.
+
+Test conversations stay in the phone's browser storage (🗑 in the chat clears
+one). Nothing goes to WhatsApp; the only network calls are to the Claude API.
+
+---
+
 ## 1. Fill in profiles (the Setup UI)
 
 1. Open `whatsapp-ai/index.html` (host it on GitHub Pages, or just open the file).
@@ -149,6 +178,7 @@ Meta Cloud API  ──POST──▶  server/index.js  (/webhook)
 ```
 whatsapp-ai/
 ├── index.html, app.js, style.css   Setup UI (profiles → family-config.json)
+├── chat.html, chat.js, chat.css    Web test chat (browser-only, no server)
 ├── manifest.json, sw.js, icon.svg  Makes the UI installable / offline
 └── server/
     ├── index.js                    Webhook server (start here)
