@@ -1,0 +1,19 @@
+{
+    "name": "Family WhatsApp AI — Profiles",
+    "short_name": "Family AI",
+    "description": "Set up the AI host and family profiles that power your WhatsApp auto-reply bot.",
+    "start_url": "./index.html",
+    "scope": "./",
+    "display": "standalone",
+    "orientation": "portrait",
+    "background_color": "#ece5dd",
+    "theme_color": "#075e54",
+    "icons": [
+        {
+            "src": "icon.svg",
+            "sizes": "any",
+            "type": "image/svg+xml",
+            "purpose": "any maskable"
+        }
+    ]
+}

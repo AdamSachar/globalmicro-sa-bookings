@@ -1,0 +1,201 @@
+/* Family WhatsApp AI — profile manager.
+   WhatsApp-ish palette, phone-first, friendly for non-technical users. */
+
+:root {
+    --wa-green: #075e54;
+    --wa-green-light: #128c7e;
+    --wa-accent: #25d366;
+    --bg: #ece5dd;
+    --card: #ffffff;
+    --ink: #1f2c33;
+    --muted: #667781;
+    --line: #e3e3e3;
+    --danger: #c0392b;
+    --radius: 14px;
+    --shadow: 0 1px 3px rgba(0, 0, 0, 0.12);
+}
+
+* { box-sizing: border-box; }
+
+body {
+    margin: 0;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    background: var(--bg);
+    color: var(--ink);
+    line-height: 1.5;
+}
+
+/* ---------- top bar ---------- */
+.topbar {
+    background: var(--wa-green);
+    color: #fff;
+    padding: 14px 16px;
+    position: sticky;
+    top: 0;
+    z-index: 5;
+    box-shadow: var(--shadow);
+}
+.brand { display: flex; align-items: center; gap: 12px; max-width: 760px; margin: 0 auto; }
+.logo { font-size: 30px; }
+.topbar h1 { margin: 0; font-size: 20px; }
+.topbar .sub { margin: 0; font-size: 13px; opacity: 0.85; }
+
+main { max-width: 760px; margin: 0 auto; padding: 16px; }
+
+.intro {
+    background: #fff8e1;
+    border: 1px solid #ffe9a8;
+    border-radius: var(--radius);
+    padding: 14px 16px;
+    font-size: 14.5px;
+    color: #5b4a00;
+}
+
+/* ---------- cards ---------- */
+.card {
+    background: var(--card);
+    border-radius: var(--radius);
+    box-shadow: var(--shadow);
+    padding: 18px;
+    margin: 16px 0;
+}
+.card-head {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 10px;
+    margin-bottom: 10px;
+    flex-wrap: wrap;
+}
+.card-head h2 { margin: 0; font-size: 18px; }
+.hint { color: var(--muted); font-size: 13px; margin: 4px 0 12px; }
+
+label {
+    display: block;
+    font-weight: 600;
+    font-size: 14px;
+    margin: 14px 0 5px;
+}
+input[type="text"], input[type="tel"], textarea {
+    width: 100%;
+    padding: 11px 12px;
+    border: 1px solid var(--line);
+    border-radius: 10px;
+    font-size: 15px;
+    font-family: inherit;
+    background: #fbfbfb;
+}
+input:focus, textarea:focus {
+    outline: none;
+    border-color: var(--wa-green-light);
+    background: #fff;
+}
+textarea { resize: vertical; }
+.field-hint { display: block; color: var(--muted); font-size: 12.5px; margin-top: 4px; }
+
+/* ---------- buttons ---------- */
+button { cursor: pointer; font-family: inherit; }
+.btn-primary, .btn-secondary, .btn-danger {
+    border: none;
+    border-radius: 10px;
+    padding: 11px 16px;
+    font-size: 14.5px;
+    font-weight: 600;
+}
+.btn-primary { background: var(--wa-accent); color: #04361e; }
+.btn-primary:hover { background: #1fbe5b; }
+.btn-secondary { background: #eef1f2; color: var(--ink); }
+.btn-secondary:hover { background: #e2e6e8; }
+.btn-danger { background: #fdecea; color: var(--danger); }
+.btn-danger:hover { background: #f8d7d3; }
+.button-row { display: flex; flex-wrap: wrap; gap: 10px; }
+.link-btn {
+    background: none; border: none; color: var(--wa-green-light);
+    font-size: 14px; font-weight: 600; padding: 0;
+}
+
+/* ---------- member list ---------- */
+.member-list { display: grid; gap: 10px; }
+.member {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    border: 1px solid var(--line);
+    border-radius: 12px;
+    padding: 12px 14px;
+    background: #fafafa;
+}
+.member:hover { background: #f2fbf5; border-color: #cdecd8; }
+.avatar {
+    width: 42px; height: 42px; flex: 0 0 42px;
+    border-radius: 50%;
+    background: var(--wa-green-light);
+    color: #fff;
+    display: flex; align-items: center; justify-content: center;
+    font-weight: 700; font-size: 17px;
+}
+.member .info { flex: 1; min-width: 0; }
+.member .info .name { font-weight: 600; }
+.member .info .meta { color: var(--muted); font-size: 13px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.badge {
+    font-size: 11px; font-weight: 700; padding: 2px 8px; border-radius: 999px;
+}
+.badge.on { background: #d6f5e0; color: #0b6b34; }
+.badge.off { background: #f0f0f0; color: #888; }
+.empty {
+    text-align: center; color: var(--muted); padding: 24px 8px; font-size: 14.5px;
+}
+
+/* ---------- modal ---------- */
+.modal-backdrop {
+    position: fixed; inset: 0;
+    background: rgba(0, 0, 0, 0.45);
+    display: flex; align-items: flex-end; justify-content: center;
+    z-index: 20;
+}
+.modal {
+    background: #fff;
+    width: 100%;
+    max-width: 620px;
+    max-height: 92vh;
+    border-radius: 16px 16px 0 0;
+    display: flex; flex-direction: column;
+    animation: slideUp 0.18s ease;
+}
+@keyframes slideUp { from { transform: translateY(24px); opacity: 0.4; } to { transform: none; opacity: 1; } }
+.modal-head {
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 16px 18px; border-bottom: 1px solid var(--line);
+}
+.modal-head h3 { margin: 0; font-size: 17px; }
+.icon-btn { background: none; border: none; font-size: 18px; color: var(--muted); }
+.modal-body { padding: 4px 18px 18px; overflow-y: auto; }
+.modal-foot {
+    display: flex; align-items: center; gap: 10px;
+    padding: 14px 18px; border-top: 1px solid var(--line);
+}
+.modal-foot .spacer { flex: 1; }
+
+.switch-row {
+    display: flex; align-items: center; gap: 10px;
+    font-weight: 500; margin-top: 16px;
+}
+.switch-row input { width: auto; }
+
+.preview-box { margin-top: 16px; }
+.preview-box pre {
+    background: #0f1b21; color: #cfe9d8;
+    padding: 12px; border-radius: 10px;
+    font-size: 12.5px; white-space: pre-wrap; word-break: break-word;
+    max-height: 260px; overflow: auto; margin-top: 10px;
+}
+
+.save-msg { color: var(--wa-green-light); font-size: 13.5px; min-height: 18px; margin: 10px 0 0; }
+
+.foot { text-align: center; color: var(--muted); font-size: 12.5px; padding: 8px 16px 28px; }
+.foot code { background: #dfe4e2; padding: 1px 5px; border-radius: 4px; }
+
+@media (min-width: 600px) {
+    .modal-backdrop { align-items: center; }
+    .modal { border-radius: 16px; }
+}
