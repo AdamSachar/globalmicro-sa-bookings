@@ -48,6 +48,14 @@
                 <button class="btn-primary" id="authAnswerBtn">Check answer</button>
             </div>
 
+            <div id="authOtpBox" class="auth-box" hidden>
+                <p class="auth-question" id="otpExplain">One more step — ask for your code, then type in the 6-digit code you get sent back on WhatsApp.</p>
+                <a class="btn-secondary otp-ask" id="otpAskBtn" target="_blank" rel="noopener">📲 Ask for my code on WhatsApp</a>
+                <label for="otpInput">Code from WhatsApp</label>
+                <input type="text" inputmode="numeric" id="otpInput" placeholder="6-digit code" maxlength="6" autocomplete="one-time-code">
+                <button class="btn-primary" id="otpBtn">Verify code</button>
+            </div>
+
             <div id="authPinBox" class="auth-box" hidden>
                 <label id="pinLabel" for="pinInput">Enter your PIN</label>
                 <input type="password" inputmode="numeric" id="pinInput" placeholder="PIN (4–8 digits)" maxlength="8" autocomplete="off">

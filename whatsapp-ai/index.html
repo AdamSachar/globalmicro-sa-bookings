@@ -52,6 +52,14 @@
 
             <label for="hostSignoff">How you usually sign off (optional)</label>
             <input type="text" id="hostSignoff" placeholder="e.g. Chat soon 👍">
+
+            <label for="hostPhone">Your WhatsApp number (family taps a button to ask you for login codes)</label>
+            <input type="tel" id="hostPhone" placeholder="e.g. +27 82 000 0000">
+
+            <label class="switch-row">
+                <input type="checkbox" id="hostOtpEvery">
+                <span>Ask for my code on <strong>every</strong> login, not just the first time on a phone</span>
+            </label>
         </section>
 
         <!-- ===================== FAMILY MEMBERS ===================== -->
@@ -62,6 +70,19 @@
             </div>
             <p class="hint" id="memberCount"></p>
             <div id="memberList" class="member-list"></div>
+        </section>
+
+        <!-- ===================== LOGIN CODES ===================== -->
+        <section class="card">
+            <div class="card-head">
+                <h2>🔑 Login codes</h2>
+            </div>
+            <p class="hint">
+                When a family member logs in, they'll WhatsApp you asking for their code.
+                Read it here and send it back <strong>to their own WhatsApp number</strong> —
+                that's what proves it's really them. Codes change every 10 minutes.
+            </p>
+            <div id="otpList" class="member-list"></div>
         </section>
 
         <!-- ===================== TRY IT ===================== -->

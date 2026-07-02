@@ -17,6 +17,12 @@ const STARTER_MEMBERS = [
     'Billy', 'Nicky', 'Adam', 'Aaron', 'Lungi',
 ];
 
+// Rolling login codes ("Grant codes"): both this app and the chat derive the
+// same 6-digit code from a per-member secret + a 10-minute time window, so the
+// host can read a member's current code here and WhatsApp it to them — no
+// server involved. The chat page has a mirror of otpCode(); keep them in sync.
+const OTP_WINDOW_MS = 10 * 60 * 1000;
+
 // ---------- state ----------
 let config = loadConfig();
 let editingId = null; // id of member being edited, or null for "new"
@@ -38,16 +44,28 @@ function loadConfig() {
             phone: '', relationship: '', about: '', engage: '', tone: '',
             topics: [], avoid: [],
             secretQuestion: '', secretAnswer: '',
+            otpSecret: randSecret(),
             autoReply: true,
         })),
     };
 }
 
+// This setup app is the source of truth for OTP secrets: it creates any that
+// are missing (the chat page never generates them, or codes would mismatch).
 function normalize(c) {
     return {
         host: c.host || {},
-        members: Array.isArray(c.members) ? c.members : [],
+        members: (Array.isArray(c.members) ? c.members : []).map(m => ({
+            ...m,
+            otpSecret: m.otpSecret || randSecret(),
+        })),
     };
+}
+
+function randSecret() {
+    const bytes = new Uint8Array(16);
+    crypto.getRandomValues(bytes);
+    return Array.from(bytes).map(b => b.toString(16).padStart(2, '0')).join('');
 }
 
 function saveConfig() {
@@ -91,6 +109,8 @@ function fillHostForm() {
     document.getElementById('hostAbout').value = h.about || '';
     document.getElementById('hostBoundaries').value = h.boundaries || '';
     document.getElementById('hostSignoff').value = h.signoff || '';
+    document.getElementById('hostPhone').value = h.phone || '';
+    document.getElementById('hostOtpEvery').checked = !!h.otpEveryLogin;
 }
 
 function readHostFromForm() {
@@ -100,11 +120,14 @@ function readHostFromForm() {
         about: document.getElementById('hostAbout').value.trim(),
         boundaries: document.getElementById('hostBoundaries').value.trim(),
         signoff: document.getElementById('hostSignoff').value.trim(),
+        phone: document.getElementById('hostPhone').value.trim(),
+        otpEveryLogin: document.getElementById('hostOtpEvery').checked,
     };
 }
 
 // ---------- member list ----------
 function renderMembers() {
+    renderOtpList(); // keep the login-codes panel in step with the member list
     const list = document.getElementById('memberList');
     const count = document.getElementById('memberCount');
     list.innerHTML = '';
@@ -169,8 +192,12 @@ function closeModal() {
 }
 
 function readMemberFromForm() {
+    const existing = editingId ? config.members.find(x => x.id === editingId) : null;
     return {
         id: editingId || newId(),
+        // Keep the member's OTP secret stable across edits, or their codes
+        // would stop matching the config already on family phones.
+        otpSecret: (existing && existing.otpSecret) || randSecret(),
         name: document.getElementById('mName').value.trim(),
         phone: document.getElementById('mPhone').value.trim(),
         relationship: document.getElementById('mRelationship').value.trim(),
@@ -248,6 +275,41 @@ function previewMember() {
     out.hidden = false;
 }
 
+// ---------- login codes (OTP) ----------
+// Mirror of otpCode() in chat.js — keep in sync.
+async function otpCode(secret, windowIndex) {
+    const buf = await crypto.subtle.digest('SHA-256',
+        new TextEncoder().encode('grantedOtp:' + secret + ':' + windowIndex));
+    const bytes = new Uint8Array(buf);
+    const num = ((bytes[0] << 24) | (bytes[1] << 16) | (bytes[2] << 8) | bytes[3]) >>> 0;
+    return String(num % 1000000).padStart(6, '0');
+}
+
+async function renderOtpList() {
+    const list = document.getElementById('otpList');
+    if (!list) return;
+    const win = Math.floor(Date.now() / OTP_WINDOW_MS);
+    const minsLeft = Math.max(1, Math.ceil(((win + 1) * OTP_WINDOW_MS - Date.now()) / 60000));
+
+    const rows = await Promise.all(config.members.map(async m => {
+        const code = m.otpSecret ? await otpCode(m.otpSecret, win) : '——';
+        return { name: m.name || 'Unnamed', code };
+    }));
+
+    list.innerHTML = '';
+    rows.forEach(r => {
+        const row = document.createElement('div');
+        row.className = 'otp-row';
+        row.innerHTML = `
+            <div class="avatar">${escapeHtml(initials(r.name))}</div>
+            <div class="info"><div class="name">${escapeHtml(r.name)}</div>
+                <div class="meta">valid ±${minsLeft} min</div></div>
+            <span class="otp-code">${escapeHtml(r.code)}</span>
+        `;
+        list.appendChild(row);
+    });
+}
+
 // ---------- export / import ----------
 function exportConfig() {
     readHostFromForm();
@@ -296,11 +358,14 @@ function importConfig(file) {
 document.addEventListener('DOMContentLoaded', () => {
     fillHostForm();
     renderMembers();
+    renderOtpList();
+    setInterval(renderOtpList, 15000); // keep codes fresh across window changes
 
     // Auto-save host fields on change.
-    ['hostName', 'hostTone', 'hostAbout', 'hostBoundaries', 'hostSignoff'].forEach(id => {
+    ['hostName', 'hostTone', 'hostAbout', 'hostBoundaries', 'hostSignoff', 'hostPhone'].forEach(id => {
         document.getElementById(id).addEventListener('blur', saveConfig);
     });
+    document.getElementById('hostOtpEvery').addEventListener('change', saveConfig);
 
     document.getElementById('addMemberBtn').addEventListener('click', () => openModal(null));
     document.getElementById('closeModalBtn').addEventListener('click', closeModal);

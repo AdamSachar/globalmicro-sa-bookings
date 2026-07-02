@@ -17,6 +17,7 @@ const KEY_KEY = 'familyWaAi.apiKey';
 const CHAT_KEY_PREFIX = 'familyWaAi.chat.';      // + member id
 const AUTH_KEY_PREFIX = 'familyWaAi.auth.';      // + member id -> {pinHash, fails}
 const MAX_PIN_FAILS = 5;                         // wrong PINs before question reset
+const OTP_WINDOW_MS = 10 * 60 * 1000;            // login codes roll every 10 min
 const MODEL = 'claude-sonnet-5';
 const MAX_TURNS_SENT = 20;                       // history window sent to the AI
 
@@ -133,7 +134,8 @@ function importConfigFile(file) {
 // the secret question again.
 
 let authMember = null;
-let authMode = null; // 'question' | 'create' | 'enter'
+let authMode = null;  // 'question' | 'create' | 'enter' | 'otp'
+let afterOtp = null;  // what a correct code unlocks: 'create' (set PIN) | 'chat'
 
 function loadAuth(id) {
     try { return JSON.parse(localStorage.getItem(AUTH_KEY_PREFIX + id)) || {}; }
@@ -177,6 +179,9 @@ function startChat(m) {
         showAuthPin('enter');
     } else if (hasQuestion(m)) {
         showAuthQuestion();
+    } else if (m.otpSecret) {
+        // No secret question, but the host can still vouch for them by code.
+        showAuthOtp('create');
     } else {
         // Host hasn't set a secret question for this person yet.
         showAuthPin('create',
@@ -194,6 +199,7 @@ function showAuthQuestion() {
     authMode = 'question';
     document.getElementById('authQuestionBox').hidden = false;
     document.getElementById('authPinBox').hidden = true;
+    document.getElementById('authOtpBox').hidden = true;
     document.getElementById('authSub').textContent = 'Answer your secret question so we know it’s really you.';
     document.getElementById('authQuestion').textContent = authMember.secretQuestion;
     const input = document.getElementById('authAnswer');
@@ -205,6 +211,7 @@ function showAuthPin(mode, subText) {
     authMode = mode;
     document.getElementById('authQuestionBox').hidden = true;
     document.getElementById('authPinBox').hidden = false;
+    document.getElementById('authOtpBox').hidden = true;
     const creating = mode === 'create';
     document.getElementById('authSub').textContent = subText ||
         (creating ? 'Choose a PIN — you’ll use it every time you open the chat.'
@@ -228,8 +235,13 @@ function checkAnswer() {
         delete rec.pinHash;
         rec.fails = 0;
         saveAuth(authMember.id, rec);
-        setAuthMsg('✓ That’s you! Now set your PIN.', true);
-        showAuthPin('create');
+        if (authMember.otpSecret) {
+            setAuthMsg('✓ Right answer! One more step.', true);
+            showAuthOtp('create');
+        } else {
+            setAuthMsg('✓ That’s you! Now set your PIN.', true);
+            showAuthPin('create');
+        }
     } else {
         rec.qFails = (rec.qFails || 0) + 1;
         saveAuth(authMember.id, rec);
@@ -265,7 +277,11 @@ async function submitPin() {
     if (rec.pinHash === await hashPin(pin)) {
         rec.fails = 0;
         saveAuth(authMember.id, rec);
-        openChat(authMember);
+        if (config.host.otpEveryLogin && authMember.otpSecret) {
+            showAuthOtp('chat'); // host wants a fresh code on every login
+        } else {
+            openChat(authMember);
+        }
     } else {
         rec.fails = (rec.fails || 0) + 1;
         if (rec.fails >= MAX_PIN_FAILS && hasQuestion(authMember)) {
@@ -279,6 +295,80 @@ async function submitPin() {
             setAuthMsg(`Wrong PIN (${rec.fails} of ${MAX_PIN_FAILS} tries).`);
             document.getElementById('pinInput').value = '';
         }
+    }
+}
+
+// ---------- OTP: the host vouches for the member with a rolling code ----------
+// Mirror of otpCode() in app.js — keep in sync. The member asks the host for
+// their code on WhatsApp; the host reads it off the setup app's "Login codes"
+// panel and sends it back to the member's own WhatsApp number.
+async function otpCode(secret, windowIndex) {
+    const buf = await crypto.subtle.digest('SHA-256',
+        new TextEncoder().encode('grantedOtp:' + secret + ':' + windowIndex));
+    const bytes = new Uint8Array(buf);
+    const num = ((bytes[0] << 24) | (bytes[1] << 16) | (bytes[2] << 8) | bytes[3]) >>> 0;
+    return String(num % 1000000).padStart(6, '0');
+}
+
+function showAuthOtp(next) {
+    authMode = 'otp';
+    afterOtp = next;
+    document.getElementById('authQuestionBox').hidden = true;
+    document.getElementById('authPinBox').hidden = true;
+    document.getElementById('authOtpBox').hidden = false;
+
+    const hostName = config.host.name || 'the host';
+    document.getElementById('authSub').textContent =
+        `${hostName} must confirm it’s you before the chat opens.`;
+    document.getElementById('otpExplain').textContent =
+        `Ask ${hostName} for your login code, then type in the 6-digit code ${hostName} sends back to you on WhatsApp.`;
+
+    const ask = document.getElementById('otpAskBtn');
+    const hostDigits = (config.host.phone || '').replace(/[^\d]/g, '');
+    if (hostDigits) {
+        ask.hidden = false;
+        ask.href = 'https://wa.me/' + hostDigits + '?text=' + encodeURIComponent(
+            `Hi ${hostName}, it's ${authMember.name} — please send me my Granted login code 🔑`);
+    } else {
+        ask.hidden = true; // no host number configured; they'll ask another way
+    }
+    const input = document.getElementById('otpInput');
+    input.value = '';
+    input.focus();
+}
+
+async function verifyOtp() {
+    const given = document.getElementById('otpInput').value.trim();
+    if (!/^\d{6}$/.test(given)) { setAuthMsg('The code is 6 digits.'); return; }
+
+    const rec = loadAuth(authMember.id);
+    const win = Math.floor(Date.now() / OTP_WINDOW_MS);
+    // Accept the current and previous window so a code sent just before the
+    // 10-minute rollover still works.
+    const valid = [await otpCode(authMember.otpSecret, win),
+                   await otpCode(authMember.otpSecret, win - 1)];
+
+    if (valid.includes(given)) {
+        rec.oFails = 0;
+        saveAuth(authMember.id, rec);
+        setAuthMsg('');
+        if (afterOtp === 'chat') openChat(authMember);
+        else showAuthPin('create');
+    } else {
+        rec.oFails = (rec.oFails || 0) + 1;
+        saveAuth(authMember.id, rec);
+        if (rec.oFails >= MAX_PIN_FAILS) {
+            setAuthMsg('Too many wrong codes. Wait a minute, then ask for a fresh code.');
+            const btn = document.getElementById('otpBtn');
+            btn.disabled = true;
+            setTimeout(() => {
+                btn.disabled = false;
+                const r = loadAuth(authMember.id); r.oFails = 0; saveAuth(authMember.id, r);
+            }, 60000);
+        } else {
+            setAuthMsg(`That code isn’t right (${rec.oFails} of ${MAX_PIN_FAILS} tries). Codes expire after ~10 minutes — ask for a fresh one if it’s been a while.`);
+        }
+        document.getElementById('otpInput').value = '';
     }
 }
 
@@ -492,6 +582,10 @@ function wireUp() {
         if (e.key === 'Enter') checkAnswer();
     });
     document.getElementById('pinBtn').addEventListener('click', submitPin);
+    document.getElementById('otpBtn').addEventListener('click', verifyOtp);
+    document.getElementById('otpInput').addEventListener('keydown', e => {
+        if (e.key === 'Enter') verifyOtp();
+    });
     ['pinInput', 'pinInput2'].forEach(id =>
         document.getElementById(id).addEventListener('keydown', e => {
             if (e.key === 'Enter') submitPin();
