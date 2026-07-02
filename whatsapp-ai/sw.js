@@ -1,6 +1,6 @@
 /* Service worker: lets the setup tool open offline and install to the home screen. */
 
-const CACHE = 'granted-v3';
+const CACHE = 'granted-v4';
 const FILES = [
     './',
     './index.html',

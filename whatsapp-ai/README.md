@@ -49,7 +49,7 @@ Sharing with family:
 Test conversations stay in the phone's browser storage (🗑 in the chat clears
 one). Nothing goes to WhatsApp; the only network calls are to the Claude API.
 
-### Login verification (secret question + PIN)
+### Login verification (secret question + host OTP + PIN)
 
 Each family member must prove who they are before the chat opens:
 
@@ -57,11 +57,24 @@ Each family member must prove who they are before the chat opens:
    for them in their profile (e.g. *"Where did we go fishing every December?"*).
    Answers are checked ignoring case and extra spaces. After 5 wrong answers
    the screen locks for a minute.
-2. **They then create their own PIN** (4–8 digits). The PIN is stored only on
+2. **The host vouches with a login code (OTP):** the member taps a button that
+   opens WhatsApp to the host ("please send me my Granted login code"). The
+   host reads the member's current 6-digit code off the **🔑 Login codes**
+   panel in the setup app and WhatsApps it back — **to the member's own
+   number**, which is what proves it's really them. Codes roll every
+   10 minutes (the previous code is accepted briefly so a just-sent code
+   doesn't expire mid-typing). No server involved: both apps derive the code
+   from a per-member secret in the config.
+3. **They then create their own PIN** (4–8 digits). The PIN is stored only on
    that device, as a hash.
-3. **Every login after that:** just the PIN. 5 wrong PINs wipes it and forces
-   the secret question again; there's also a "Forgot your PIN?" link that does
+4. **Every login after that:** just the PIN — unless the host enables
+   *"Ask for my code on every login"* in the setup app, in which case each
+   login is PIN + a fresh code from the host. 5 wrong PINs wipes the PIN and
+   forces the secret question + code again; the "Forgot your PIN?" link does
    the same.
+
+Set your WhatsApp number in the host profile so the "Ask for my code" button
+can open a chat to you directly.
 
 Set the question/answer per member in the setup UI (members without one show
 "no secret question yet" in the list — they can only be protected by a PIN, so
